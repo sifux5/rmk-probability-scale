@@ -12,21 +12,21 @@ import pandas as pd
 BASE_URL = "https://andmed.stat.ee/api/v1/et/stat"
 TABLE_PATH = "keskkond/loodusvarad-ja-nende-kasutamine/metsavaru/KK51.PX"
 
-def fetch_forest_stock() -> pd.DataFrame:
+
+def fetch_forest_stock() -> dict:
     """
     Fetch forest area by tree species from the Statistics Estonia API.
-    Returns a DataFrame with years as rows and tree species as columns.
+    Returns the raw API response as a dict.
     """
     url = f"{BASE_URL}/{TABLE_PATH}"
 
-    # PX-Web requires a POST request to get actual data
     query = {
         "query": [
             {
                 "code": "Näitaja",
                 "selection": {
                     "filter": "item",
-                    "values": ["1", "2", "3", "4", "5", "6"]
+                    "values": ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
                 }
             },
             {
