@@ -1,17 +1,22 @@
 """
-Fetch forest inventory data from Statistics Estonia (stat.ee) API.
+Fetch forest and population data from Statistics Estonia (stat.ee) API.
 
 The API follows the PX-Web standard. We query:
-  - KK51.PX:  forest stock estimates from the National Forest Inventory (SMI), 1999-2024
-  - KK513.PX: destroyed forest stands by cause and county, 1991-2024
+  - KK51.PX:  forest area by tree species, National Forest Inventory, 1999-2024
+  - KK513.PX: destroyed forest stands by cause, 1991-2024
+  - RV104.PX: births by multiplicity (single, twins, etc.), 1922-2024
+  - RV40.PX:  deaths by month, 1927-2024
 """
 
 import json
 import requests
 
 BASE_URL = "https://andmed.stat.ee/api/v1/et/stat"
+
 STOCK_TABLE_PATH = "keskkond/loodusvarad-ja-nende-kasutamine/metsavaru/KK51.PX"
 DAMAGED_TABLE_PATH = "keskkond/loodusvarad-ja-nende-kasutamine/metsavaru/KK513.PX"
+BIRTHS_TABLE_PATH = "rahvastik/rahvastikusundmused/sunnid/RV104.PX"
+DEATHS_TABLE_PATH = "rahvastik/rahvastikusundmused/surmad/RV40.PX"
 
 
 def fetch_forest_stock() -> dict:
@@ -38,9 +43,7 @@ def fetch_forest_stock() -> dict:
                 }
             }
         ],
-        "response": {
-            "format": "json"
-        }
+        "response": {"format": "json"}
     }
 
     response = requests.post(url, json=query)
@@ -80,9 +83,73 @@ def fetch_damaged_forest() -> dict:
                 }
             }
         ],
-        "response": {
-            "format": "json"
-        }
+        "response": {"format": "json"}
+    }
+
+    response = requests.post(url, json=query)
+    response.raise_for_status()
+    return response.json()
+
+
+def fetch_births() -> dict:
+    """
+    Fetch birth counts by multiplicity (single, twins, triplets) from Statistics Estonia.
+    Table RV104.PX: number of deliveries and multiple births, 1922-2024.
+    Indicator codes: 1=Kokku, 2=üksikud, 3=kaksikud, 4=kolmikud
+    """
+    url = f"{BASE_URL}/{BIRTHS_TABLE_PATH}"
+
+    query = {
+        "query": [
+            {
+                "code": "Näitaja",
+                "selection": {
+                    "filter": "item",
+                    "values": ["1", "3"]
+                }
+            },
+            {
+                "code": "Aasta",
+                "selection": {
+                    "filter": "all",
+                    "values": ["*"]
+                }
+            }
+        ],
+        "response": {"format": "json"}
+    }
+
+    response = requests.post(url, json=query)
+    response.raise_for_status()
+    return response.json()
+
+
+def fetch_deaths() -> dict:
+    """
+    Fetch annual death counts from Statistics Estonia.
+    Table RV40.PX: deaths by month, 1927-2024.
+    We request only the yearly total (Surmakuu=1 means 'Kuud kokku').
+    """
+    url = f"{BASE_URL}/{DEATHS_TABLE_PATH}"
+
+    query = {
+        "query": [
+            {
+                "code": "Surmakuu",
+                "selection": {
+                    "filter": "item",
+                    "values": ["1"]
+                }
+            },
+            {
+                "code": "Aasta",
+                "selection": {
+                    "filter": "all",
+                    "values": ["*"]
+                }
+            }
+        ],
+        "response": {"format": "json"}
     }
 
     response = requests.post(url, json=query)
@@ -91,5 +158,7 @@ def fetch_damaged_forest() -> dict:
 
 
 if __name__ == "__main__":
-    data = fetch_damaged_forest()
-    print(json.dumps(data, indent=2, ensure_ascii=False))
+    print("--- Births ---")
+    print(json.dumps(fetch_births(), indent=2, ensure_ascii=False)[:500])
+    print("--- Deaths ---")
+    print(json.dumps(fetch_deaths(), indent=2, ensure_ascii=False)[:500])
