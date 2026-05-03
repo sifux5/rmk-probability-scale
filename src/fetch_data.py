@@ -11,6 +11,7 @@ The API follows the PX-Web standard. We query:
 """
 
 import json
+import pathlib
 import requests
 
 BASE_URL = "https://andmed.stat.ee/api/v1/et/stat"
@@ -21,6 +22,17 @@ BIRTHS_TABLE_PATH = "rahvastik/rahvastikusundmused/sunnid/RV104.PX"
 DEATHS_TABLE_PATH = "rahvastik/rahvastikusundmused/surmad/RV40.PX"
 DIVORCES_TABLE_PATH = "rahvastik/rahvastikusundmused/abielulahutused/RV291.PX"
 MARRIAGES_TABLE_PATH = "rahvastik/rahvastikusundmused/abielud/RV02.PX"
+
+DATA_DIR = pathlib.Path(__file__).parent.parent / "data" / "raw"
+
+
+def save_raw(name: str, data: dict) -> None:
+    """Save a raw API response to data/raw/<name>.json for reproducibility."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    path = DATA_DIR / f"{name}.json"
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    print(f"Saved {path}")
 
 
 def fetch_forest_stock() -> dict:
@@ -235,7 +247,12 @@ def fetch_marriages() -> dict:
 
 
 if __name__ == "__main__":
-    print("--- Divorces ---")
-    print(json.dumps(fetch_divorces(), indent=2, ensure_ascii=False)[:500])
-    print("--- Marriages ---")
-    print(json.dumps(fetch_marriages(), indent=2, ensure_ascii=False)[:500])
+    for name, fn in [
+        ("forest_stock", fetch_forest_stock),
+        ("damaged_forest", fetch_damaged_forest),
+        ("births", fetch_births),
+        ("deaths", fetch_deaths),
+        ("divorces", fetch_divorces),
+        ("marriages", fetch_marriages),
+    ]:
+        save_raw(name, fn())

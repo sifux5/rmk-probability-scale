@@ -29,6 +29,7 @@ from fetch_data import (
     fetch_deaths,
     fetch_divorces,
     fetch_marriages,
+    save_raw,
 )
 
 OUTPUT_PATH = "output/probability_scale.png"
@@ -91,11 +92,22 @@ def plot_probability_scale(probs: list[dict]) -> None:
 
 if __name__ == "__main__":
     stock_raw = fetch_forest_stock()
+    save_raw("forest_stock", stock_raw)
+
     damaged_raw = fetch_damaged_forest()
+    save_raw("damaged_forest", damaged_raw)
+
     births_raw = fetch_births()
+    save_raw("births", births_raw)
+
     deaths_raw = fetch_deaths()
+    save_raw("deaths", deaths_raw)
+
     divorces_raw = fetch_divorces()
+    save_raw("divorces", divorces_raw)
+
     marriages_raw = fetch_marriages()
+    save_raw("marriages", marriages_raw)
 
     stock_df = parse_forest_stock(stock_raw)
     damaged_df = parse_damaged_forest(damaged_raw)
