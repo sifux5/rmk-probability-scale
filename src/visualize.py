@@ -1,11 +1,13 @@
 """
-Visualize the Estonian forest and population probability scale.
+Visualize the Estonian probability scale.
 
 Produces a horizontal log-scale chart saved to output/probability_scale.png.
+Forest events are shown in green, population events in blue.
 """
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import matplotlib.patches as mpatches
 import sys
 import os
 
@@ -17,31 +19,43 @@ from compute_probs import (
     parse_damaged_forest,
     parse_births,
     parse_deaths,
+    parse_divorces,
+    parse_marriages,
 )
-from fetch_data import fetch_forest_stock, fetch_damaged_forest, fetch_births, fetch_deaths
+from fetch_data import (
+    fetch_forest_stock,
+    fetch_damaged_forest,
+    fetch_births,
+    fetch_deaths,
+    fetch_divorces,
+    fetch_marriages,
+)
 
 OUTPUT_PATH = "output/probability_scale.png"
+
+FOREST_COLOR = "#2d6a4f"
+POPULATION_COLOR = "#1d3557"
 
 
 def plot_probability_scale(probs: list[dict]) -> None:
     """
     Draw a horizontal log-scale probability chart and save to OUTPUT_PATH.
     Events are sorted by probability descending.
+    Forest and population events are colored differently.
     """
     probs_sorted = sorted(probs, key=lambda p: p["probability"], reverse=True)
 
     labels = [p["event"] for p in probs_sorted]
     values = [p["probability"] for p in probs_sorted]
-
-    fig, ax = plt.subplots(figsize=(13, 6))
-
-    green_shades = [
-        "#1b4332", "#2d6a4f", "#40916c",
-        "#52b788", "#74c69d", "#95d5b2", "#b7e4c7"
+    colors = [
+        FOREST_COLOR if p["category"] == "forest" else POPULATION_COLOR
+        for p in probs_sorted
     ]
 
+    fig, ax = plt.subplots(figsize=(14, 7))
+
     y_positions = list(range(len(labels)))
-    bars = ax.barh(y_positions, values, color=green_shades[:len(labels)], height=0.6)
+    bars = ax.barh(y_positions, values, color=colors, height=0.6)
 
     ax.set_xscale("log")
     ax.set_xlim(0.00005, 2.0)
@@ -60,15 +74,19 @@ def plot_probability_scale(probs: list[dict]) -> None:
             va="center", ha="left", fontsize=10, color="#1b4332"
         )
 
-    ax.set_xlabel("Tõenäosus (logaritmiline skaala)", fontsize=12)
-    ax.set_title("Eesti tõenäosusskaala", fontsize=15, fontweight="bold", pad=15)
+    forest_patch = mpatches.Patch(color=FOREST_COLOR, label="Forest")
+    population_patch = mpatches.Patch(color=POPULATION_COLOR, label="Population")
+    ax.legend(handles=[forest_patch, population_patch], fontsize=11, loc="lower right")
+
+    ax.set_xlabel("Probability (log scale)", fontsize=12)
+    ax.set_title("Estonian Probability Scale", fontsize=15, fontweight="bold", pad=15)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.grid(axis="x", linestyle="--", alpha=0.4)
 
     plt.tight_layout()
     plt.savefig(OUTPUT_PATH, dpi=150, bbox_inches="tight")
-    print(f"Graafik salvestatud: {OUTPUT_PATH}")
+    print(f"Chart saved to: {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":
@@ -76,11 +94,17 @@ if __name__ == "__main__":
     damaged_raw = fetch_damaged_forest()
     births_raw = fetch_births()
     deaths_raw = fetch_deaths()
+    divorces_raw = fetch_divorces()
+    marriages_raw = fetch_marriages()
 
     stock_df = parse_forest_stock(stock_raw)
     damaged_df = parse_damaged_forest(damaged_raw)
     births_df = parse_births(births_raw)
     deaths_df = parse_deaths(deaths_raw)
+    divorces_df = parse_divorces(divorces_raw)
+    marriages_df = parse_marriages(marriages_raw)
 
-    probs = compute_probabilities(stock_df, damaged_df, births_df, deaths_df)
+    probs = compute_probabilities(
+        stock_df, damaged_df, births_df, deaths_df, divorces_df, marriages_df
+    )
     plot_probability_scale(probs)

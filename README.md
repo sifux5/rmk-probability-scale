@@ -7,12 +7,22 @@ intuition about what different probabilities actually mean in practice.
 
 ## Idea
 
-People have good intuition about distances — centimetres, metres, kilometres.
-But probabilities? Not so much. What kinds of events happen with probability 0.4?
-What about 0.0002?
+How likely is it that a random Estonian hectare is forested? That a random
+birth produces twins? That a forest fire destroys a specific hectare this year?
 
-This project answers those questions using Estonian forest and population data,
-placing everyday events on a logarithmic probability scale.
+Most people can reason about distances intuitively — centimetres, metres,
+kilometres each have a clear physical feel. Probabilities are different.
+0.4 and 0.004 look similar on paper but are worlds apart in practice.
+
+This project builds a probability scale from Estonian open data: a ranked list
+of events that anchors abstract numbers to concrete, relatable phenomena.
+The events span four orders of magnitude — from "happens to about half of all
+cases" down to "expect it once every few thousand years on any given hectare".
+
+Data comes entirely from the Statistics Estonia API, covering forest inventory
+and vital statistics. One Bayesian twist is included: knowing that a fire
+occurred somewhere, how does that change our belief about what kind of forest
+it was?
 
 ## Data sources
 
@@ -28,15 +38,16 @@ All data is fetched programmatically from the
 
 ## Results
 
-| Event | Probability |
-|---|---|
-| A random Estonian hectare is forested | 0.5198 |
-| A random forest hectare is pine or spruce | 0.4292 |
-| A random forest hectare is birch | 0.2743 |
-| A random forest hectare is aspen | 0.0608 |
-| A random birth is twins | 0.0302 |
-| A random Estonian died this year | 0.0115 |
-| A random forest hectare is destroyed by fire this year | 0.000238 |
+| Event | Probability | Category |
+|---|---|---|
+| A random Estonian hectare is forested | 0.5198 | Forest |
+| A random forest hectare is pine or spruce | 0.4292 | Forest |
+| A random forest hectare is birch | 0.2743 | Forest |
+| A random forest hectare is aspen | 0.0608 | Forest |
+| A random birth produces twins | 0.0302 | Population |
+| A random Estonian died this year | 0.0115 | Population |
+| A random Estonian got divorced this year | 0.0021 | Population |
+| A random forest hectare is destroyed by fire this year | 0.000238 | Forest |
 
 ## Bayesian analysis: fire risk by tree species
 
