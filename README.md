@@ -35,6 +35,8 @@ All data is fetched programmatically from the
 | KK513.PX | Destroyed forest stands by cause and county, 1991–2024 |
 | RV104.PX | Births by multiplicity (single, twins, triplets), 1922–2024 |
 | RV40.PX | Deaths by month, 1927–2024 |
+| RV291.PX | Divorces by marriage duration, 1949–2024 |
+| RV02.PX | Marriages by month and county, 2006–2024 |
 
 ## Results
 
@@ -68,6 +70,7 @@ somewhere, the probability that it was in conifer forest is 69%.
 
 ## Project structure
 
+```
 rmk-probability-scale/
 ├── src/
 │   ├── fetch_data.py      # API queries to Statistics Estonia
@@ -78,6 +81,7 @@ rmk-probability-scale/
 │   └── probability_scale.png
 ├── requirements.txt
 └── README.md
+```
 
 ## Running
 
