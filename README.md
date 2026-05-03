@@ -1,52 +1,74 @@
-# Eesti tõenäosusskaala
+# Estonian Probability Scale
 
-Projekt visualiseerib erinevate sündmuste tõenäosusi Eestis,
-aidates lugejal arendada intuitsiooni tõenäosuste kohta.
+A probability scale built from Estonian open data, helping readers develop
+intuition about what different probabilities actually mean in practice.
 
-![Tõenäosusskaala](output/probability_scale.png)
+![Probability scale](output/probability_scale.png)
 
-## Idee
+## Idea
 
-Inimestel on hea intuitsioon vahemaade kohta, kuid mitte tõenäosuste kohta.
-Mis sündmused juhtuvad tõenäosusega 0.4? Mis tõenäosusega 0.0002?
-See projekt vastab neile küsimustele Eesti metsa- ja rahvastikuandmete põhjal.
+People have good intuition about distances — centimetres, metres, kilometres.
+But probabilities? Not so much. What kinds of events happen with probability 0.4?
+What about 0.0002?
 
-## Andmeallikad
+This project answers those questions using Estonian forest and population data,
+placing everyday events on a logarithmic probability scale.
 
-Kõik andmed on laetud programmiliselt [Statistikaameti API](https://andmed.stat.ee/api/v1/et/stat) kaudu:
+## Data sources
 
-| Tabel | Kirjeldus |
+All data is fetched programmatically from the
+[Statistics Estonia API](https://andmed.stat.ee/api/v1/et/stat):
+
+| Table | Description |
 |---|---|
-| KK51.PX | Metsavaru riikliku metsainventeerimise hinnangul, 1999–2024 |
-| KK513.PX | Hukkunud puistud maakonna järgi, 1991–2024 |
-| RV104.PX | Sünnituste arv ja mitmikesünnitused, 1922–2024 |
-| RV40.PX | Surnud surmakuu järgi, 1927–2024 |
+| KK51.PX | Forest stock by tree species, National Forest Inventory, 1999–2024 |
+| KK513.PX | Destroyed forest stands by cause and county, 1991–2024 |
+| RV104.PX | Births by multiplicity (single, twins, triplets), 1922–2024 |
+| RV40.PX | Deaths by month, 1927–2024 |
 
-## Tulemused
+## Results
 
-| Sündmus | Tõenäosus |
+| Event | Probability |
 |---|---|
-| Juhuslik Eesti hektar on metsamaa | 0.5198 |
-| Juhuslik metsahektar on männik või kuusik | 0.4292 |
-| Juhuslik metsahektar on kaasik | 0.2743 |
-| Juhuslik metsahektar on haavikut | 0.0608 |
-| Juhuslik sünd on kaksikud | 0.0302 |
-| Juhuslik eestlane suri sel aastal | 0.0115 |
-| Juhuslik metsahektar hukkub tulekahjus sel aastal | 0.000238 |
+| A random Estonian hectare is forested | 0.5198 |
+| A random forest hectare is pine or spruce | 0.4292 |
+| A random forest hectare is birch | 0.2743 |
+| A random forest hectare is aspen | 0.0608 |
+| A random birth is twins | 0.0302 |
+| A random Estonian died this year | 0.0115 |
+| A random forest hectare is destroyed by fire this year | 0.000238 |
 
-## Projekti struktuur
+## Bayesian analysis: fire risk by tree species
+
+Conifer forest (pine + spruce) makes up **43%** of Estonian forest, but burns
+roughly 3x more readily than deciduous forest, based on European fire statistics.
+
+Applying Bayes' theorem:
+
+| | Value |
+|---|---|
+| P(conifer) — prior | 42.9% |
+| Relative fire risk in conifer forest | 3.0x |
+| P(conifer \| fire) — posterior | 69.3% |
+
+**Interpretation:** Although conifers make up 43% of forest, 69% of fires occur
+in conifer stands. Bayes' theorem lets us flip this around — if a fire occurred
+somewhere, the probability that it was in conifer forest is 69%.
+
+## Project structure
 
 rmk-probability-scale/
 ├── src/
-│   ├── fetch_data.py      # API päringud statistikaametist
-│   ├── compute_probs.py   # Tõenäosuste arvutamine
-│   └── visualize.py       # Graafiku genereerimine
+│   ├── fetch_data.py      # API queries to Statistics Estonia
+│   ├── compute_probs.py   # Probability computations
+│   ├── bayes.py           # Bayesian fire risk analysis
+│   └── visualize.py       # Chart generation
 ├── output/
 │   └── probability_scale.png
 ├── requirements.txt
 └── README.md
 
-## Käivitamine
+## Running
 
 ```bash
 git clone https://github.com/sifux5/rmk-probability-scale
@@ -54,11 +76,10 @@ cd rmk-probability-scale
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-python3 src/visualize.py
+python3 src/visualize.py   # generates output/probability_scale.png
+python3 src/bayes.py       # prints Bayesian fire risk analysis
 ```
 
-Graafik salvestatakse `output/probability_scale.png`.
-
-## Litsents
+## License
 
 MIT
